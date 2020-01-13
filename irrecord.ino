@@ -22,26 +22,16 @@ void clear_data() {
 void setup() {
     Serial.begin(115200);
     while (!Serial);
-    Serial.println("Send an IR signal and I will record it.");
-    Serial.println("Press the left button and we will retransmit it.");
     CircuitPlayground.begin();
 
-    CircuitPlayground.irReceiver.enableIRIn(); // Start the receiver
+    CircuitPlayground.irReceiver.enableIRIn();
 
     clear_data();
 }
 
 void loop() {
-    /* Receiver will look for a signal and when a complete frame of data
-     * has been received, getResults() returns true. Once that happens,
-     * the receiver stops reccording so you will need to restart it
-     * after you have processed the data.
-     */
     if (CircuitPlayground.irReceiver.getResults()) {
-        // attempt to decode it
         if (CircuitPlayground.irDecoder.decode()) {
-                Serial.println("IR decoded");
-                // Print the results. Change parameter to "true" for verbose output.
                 CircuitPlayground.irDecoder.dumpResults(false);
 
                 Serial.println("Signal captured. Press left button to save.");
@@ -50,25 +40,22 @@ void loop() {
                 IR_bits[data_ptr] = CircuitPlayground.irDecoder.bits;
         }
 
-        CircuitPlayground.irReceiver.enableIRIn(); // Restart receiver
+        CircuitPlayground.irReceiver.enableIRIn();
     }
 
-    /* If the left button is pressed and we have received a code
-     * retransmit it using the sender.
-     */
     if (CircuitPlayground.leftButton()) {
         if (IR_protocol[data_ptr]) {
             Serial.print("Data #"); Serial.print(data_ptr + 1); Serial.println(" saved.");
             data_ptr++;
         }
 
-        while (CircuitPlayground.leftButton()); // Wait until the button is released
+        while (CircuitPlayground.leftButton());
     }
 
     if (CircuitPlayground.rightButton()) {
         Serial.println("Data cleared.");
         clear_data();
-        while (CircuitPlayground.rightButton()); // Wait until the button is released
+        while (CircuitPlayground.rightButton());
     }
 
     if (CircuitPlayground.slideSwitch()) {
